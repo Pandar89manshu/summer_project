@@ -6,11 +6,10 @@ import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
 import postRoute from "./routes/post.route.js";
 import messageRoute from "./routes/message.route.js";
-//import { app, server } from "./socket/socket.js";
-//import path from "path";
+import { app, server } from "./socket/socket.js";
+import path from "path";
  
 dotenv.config({});
-const app = express();
 
 const PORT = process.env.PORT || 3000;
 
@@ -28,10 +27,11 @@ app.get("/",(req,res)=>{
 
 
 
-const corsOptions ={
-   origin:`http://localhost:5173`,
-   credentials:true
-}
+const corsOptions = {
+  origin:"http://localhost:5173",
+  credentials: true,
+};
+
 
 app.use(cors(corsOptions));
 // yha pr apni api ayengi

@@ -46,25 +46,38 @@ export const addNewPost = async (req, res) => {
     }
 }
 export const getAllPost = async (req, res) => {
-    try {
-        const posts = await Post.find().sort({ createdAt: -1 })
-            .populate({ path: 'author', select: 'username profilePicture' })
-            .populate({
-                path: 'comments',
-                sort: { createdAt: -1 },
-                populate: {
-                    path: 'author',
-                    select: 'username profilePicture'
-                }
-            });
-        return res.status(200).json({
-            posts,
-            success: true
-        })
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate({ path: 'author', select: 'username profilePicture' })
+      .populate({
+        path: 'comments',
+        sort: { createdAt: -1 },
+        populate: {
+          path: 'author',
+          select: 'username profilePicture',
+        },
+      })
+      .lean(); // Important: to allow plain JS manipulation
+
+    const user = await User.findById(req.id); // Logged-in user
+
+    const postsWithBookmarks = posts.map((post) => ({
+      ...post,
+      bookmarks: user.bookmarks.includes(post._id) ? [user._id] : [],
+    }));
+
+    return res.status(200).json({
+      posts: postsWithBookmarks,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
+
+
 export const getUserPost = async (req, res) => {
     try {
         const authorId = req.id;
@@ -234,28 +247,29 @@ export const deletePost = async (req,res) => {
         console.log(error);
     }
 }
-export const bookmarkPost = async (req,res) => {
-    try {
-        const postId = req.params.id;
-        const authorId = req.id;
-        const post = await Post.findById(postId);
-        if(!post) return res.status(404).json({message:'Post not found', success:false});
-        
-        const user = await User.findById(authorId);
-        if(user.bookmarks.includes(post._id)){
-            // already bookmarked -> remove from the bookmark
-            await user.updateOne({$pull:{bookmarks:post._id}});
-            await user.save();
-            return res.status(200).json({type:'unsaved', message:'Post removed from bookmark', success:true});
 
-        }else{
-            // bookmark krna pdega
-            await user.updateOne({$addToSet:{bookmarks:post._id}});
-            await user.save();
-            return res.status(200).json({type:'saved', message:'Post bookmarked', success:true});
-        }
+export const bookmarkPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.id;
 
-    } catch (error) {
-        console.log(error);
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found', success: false });
+
+    if (user.bookmarks.includes(postId)) {
+      // Unsave
+      await user.updateOne({ $pull: { bookmarks: postId } });
+      await user.save();
+      return res.status(200).json({ type: 'unsaved', message: 'Post removed from bookmark', success: true });
+    } else {
+      // Save
+      await user.updateOne({ $addToSet: { bookmarks: postId } });
+      await user.save();
+      return res.status(200).json({ type: 'saved', message: 'Post bookmarked', success: true });
     }
-}
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal server error', success: false });
+  }
+};

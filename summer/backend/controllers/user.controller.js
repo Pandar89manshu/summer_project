@@ -91,15 +91,27 @@ export const login = async (req, res) => {
     }
 };
 export const logout = async (_, res) => {
-    try {
-        return res.cookie("token", "", { maxAge: 0 }).json({
-            message: 'Logged out successfully.',
-            success: true
-        });
-    } catch (error) {
-        console.log(error);
-    }
+  try {
+    res
+      .clearCookie("token", {
+        httpOnly: true,
+        sameSite: "None", // or "Lax" if you're using localhost only
+        secure: true,     // true if you're on https or working cross-origin
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "Logout successful",
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Logout failed",
+    });
+  }
 };
+
 export const getProfile = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -164,19 +176,20 @@ export const getSuggestedUsers = async (req, res) => {
         console.log(error);
     }
 };
+
 export const followOrUnfollow = async (req, res) => {
     try {
-        const followKrneWala = req.id; // patel
-        const jiskoFollowKrunga = req.params.id; // shivani
-        if (followKrneWala === jiskoFollowKrunga) {
+        const userHimself = req.id;
+        const userBeingFollowed = req.params.id;
+        if (userHimself === userBeingFollowed) {
             return res.status(400).json({
                 message: 'You cannot follow/unfollow yourself',
                 success: false
             });
         }
 
-        const user = await User.findById(followKrneWala);
-        const targetUser = await User.findById(jiskoFollowKrunga);
+        const user = await User.findById(userHimself);
+        const targetUser = await User.findById(userBeingFollowed);
 
         if (!user || !targetUser) {
             return res.status(400).json({
@@ -184,24 +197,77 @@ export const followOrUnfollow = async (req, res) => {
                 success: false
             });
         }
-        // mai check krunga ki follow krna hai ya unfollow
-        const isFollowing = user.following.includes(jiskoFollowKrunga);
+
+        const isFollowing = user.following.includes(userBeingFollowed);
+
         if (isFollowing) {
-            // unfollow logic ayega
             await Promise.all([
-                User.updateOne({ _id: followKrneWala }, { $pull: { following: jiskoFollowKrunga } }),
-                User.updateOne({ _id: jiskoFollowKrunga }, { $pull: { followers: followKrneWala } }),
+                User.updateOne({ _id: userHimself }, { $pull: { following: userBeingFollowed } }),
+                User.updateOne({ _id: userBeingFollowed }, { $pull: { followers: userHimself } }),
             ])
             return res.status(200).json({ message: 'Unfollowed successfully', success: true });
         } else {
-            // follow logic ayega
             await Promise.all([
-                User.updateOne({ _id: followKrneWala }, { $push: { following: jiskoFollowKrunga } }),
-                User.updateOne({ _id: jiskoFollowKrunga }, { $push: { followers: followKrneWala } }),
+                User.updateOne({ _id: userHimself }, { $push: { following: userBeingFollowed } }),
+                User.updateOne({ _id: userBeingFollowed }, { $push: { followers: userHimself } }),
             ])
             return res.status(200).json({ message: 'followed successfully', success: true });
         }
+        
     } catch (error) {
         console.log(error);
     }
 }
+
+
+
+export const searchUsers = async (req, res) => {
+    try {
+      const { query } = req.query;
+  
+      if (!query) {
+        return res.status(400).json({ success: false, message: "Search query is required" });
+      }
+  
+      const users = await User.find({
+        username: { $regex: `^${query}`, $options: 'i' }
+      }).select('username profilePicture');
+  
+      res.status(200).json({ success: true, users });
+    } catch (error) {
+      res.status(500).json({ success: false, message: "Error searching users" });
+    }
+  };
+
+
+ export const getFollowers = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id).populate('followers', 'username profilePicture');
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, followers: user.followers });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error fetching followers', error });
+    }
+  };
+  
+  // Fetch following of a user
+ export const getFollowing = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id).populate('following', 'username profilePicture');
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      res.status(200).json({ success: true, following: user.following });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Error fetching following', error });
+    }
+  };
+
+
+  
+  
+  
