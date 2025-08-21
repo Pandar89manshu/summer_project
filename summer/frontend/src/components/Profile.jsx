@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import axios from "axios";
 import { Heart, MessageCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import API_BASE from '@/confige';
 
 const Profile = () => {
   const { id: userId } = useParams();
@@ -39,7 +40,7 @@ const Profile = () => {
   const handleFollowToggle = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/v1/user/followorunfollow/${userId}`,
+        `${API_BASE}/api/v1/user/followorunfollow/${userId}`,
         {},
         { withCredentials: true }
       );
@@ -61,7 +62,7 @@ const Profile = () => {
 
   const fetchModalData = async (type) => {
     try {
-      const endpoint = `http://localhost:3000/api/v1/user/${userId}/${type}`;
+      const endpoint = `${API_BASE}/api/v1/user/${userId}/${type}`;
       const response = await axios.get(endpoint, { withCredentials: true });
       if (response.data.success) {
         setModalData(response.data[type]);

@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import CreatePost from "./CreatePost";
+import API_BASE from '@/confige'; // ✅ centralized API base
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const LeftSidebar = () => {
         dispatch(setSocket(null)); // ✅ clear from Redux
       }
 
-      const res = await axios.get("http://localhost:3000/api/v1/user/logout", {
+      const res = await axios.get(`${API_BASE}/api/v1/user/logout`, {
         withCredentials: true,
       });
 

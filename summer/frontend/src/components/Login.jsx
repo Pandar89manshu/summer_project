@@ -7,8 +7,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAuthUser } from '@/redux/authSlice';
-import { setSocket } from '@/redux/socketSlice'; // ✅ added
-import { io } from 'socket.io-client'; // ✅ added
+import { setSocket } from '@/redux/socketSlice';
+import { io } from 'socket.io-client';
+import API_BASE from '@/confige'; // ✅ centralized API base
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -28,32 +29,28 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:3000/api/v1/user/login', input, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+
+      // ✅ Use centralized API_BASE
+      const res = await axios.post(`${API_BASE}/user/login`, input, {
+        headers: { 'Content-Type': 'application/json' },
         withCredentials: true
       });
 
       if (res.data.success) {
         dispatch(setAuthUser(res.data.user));
 
-        // ✅ 1. Create socket connection
-        const socket = io("http://localhost:3000");
+        // ✅ Socket connection to backend
+        const socket = io(API_BASE.replace("/api/v1",""), {
+          withCredentials: true
+        });
 
-        // ✅ 2. Emit user ID to backend
         socket.emit("addUser", res.data.user._id);
-
-        // ✅ 3. Store socket in Redux
         dispatch(setSocket(socket));
 
         navigate("/");
         toast.success(res.data.message);
 
-        setInput({
-          email: "",
-          password: ""
-        });
+        setInput({ email: "", password: "" });
       }
     } catch (error) {
       console.log(error);
@@ -64,9 +61,7 @@ const Login = () => {
   }
 
   useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
+    if (user) navigate("/");
   }, [user, navigate]);
 
   return (
@@ -107,7 +102,9 @@ const Login = () => {
           )
         }
 
-        <span className='text-center'>Doesn't have an account? <Link to="/signup" className='text-[#033f63]'>Signup</Link></span>
+        <span className='text-center'>
+          Doesn't have an account? <Link to="/signup" className='text-[#033f63]'>Signup</Link>
+        </span>
       </form>
     </div>
   )

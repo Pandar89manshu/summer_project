@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import API_BASE from '@/confige';
 
 const Signup = () => {
   const [input, setInput] = useState({
@@ -22,7 +23,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post('http://localhost:3000/api/v1/user/register', input, {
+      const res = await axios.post(`${API_BASE}/api/v1/user/register`, input, {
         headers: {
           'Content-Type': 'application/json'
         },

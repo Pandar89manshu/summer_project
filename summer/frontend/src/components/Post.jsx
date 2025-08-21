@@ -12,6 +12,7 @@ import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { Badge } from "./ui/badge";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa"; // Reg = outlined, FaBookmark = filled
 import { Link } from "react-router-dom"; // make sure it's imported at top
+import API_BASE from '@/confige';
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
@@ -54,7 +55,7 @@ useEffect(() => {
 const handleFollowToggle = async () => {
   try {
     const response = await axios.post(
-      `http://localhost:3000/api/v1/user/followorunfollow/${post.author._id}`,
+      `${API_BASE}/api/v1/user/followorunfollow/${post.author._id}`,
       {},
       { withCredentials: true }
     );

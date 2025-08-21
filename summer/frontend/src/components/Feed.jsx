@@ -6,6 +6,7 @@ import Posts from "./Posts";
 import RightSidebar from "./RightSidebar";
 import { Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import API_BASE from '@/confige';
 
 const Feed = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +22,7 @@ const Feed = () => {
       }
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/user/search",
+          `${API_BASE}/api/v1/user/search`,
           {
             params: { query: searchQuery },
             withCredentials: true,
