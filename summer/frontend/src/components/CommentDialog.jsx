@@ -36,7 +36,7 @@ const CommentDialog = ({ open, setOpen }) => {
   const sendMessageHandler = async () => {
     try {
       const res = await axios.post(
-        `${API_BASE}/api/v1/post/${selectedPost?._id}/comment`,
+        `${API_BASE}/post/${selectedPost?._id}/comment`,
         { text },
         {
           headers: {

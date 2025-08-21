@@ -22,7 +22,7 @@ const Feed = () => {
       }
       try {
         const response = await axios.get(
-          `${API_BASE}/api/v1/user/search`,
+          `${API_BASE}/user/search`,
           {
             params: { query: searchQuery },
             withCredentials: true,

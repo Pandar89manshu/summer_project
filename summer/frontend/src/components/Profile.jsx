@@ -40,7 +40,7 @@ const Profile = () => {
   const handleFollowToggle = async () => {
     try {
       const response = await axios.post(
-        `${API_BASE}/api/v1/user/followorunfollow/${userId}`,
+        `${API_BASE}/user/followorunfollow/${userId}`,
         {},
         { withCredentials: true }
       );
@@ -62,7 +62,7 @@ const Profile = () => {
 
   const fetchModalData = async (type) => {
     try {
-      const endpoint = `${API_BASE}/api/v1/user/${userId}/${type}`;
+      const endpoint = `${API_BASE}/user/${userId}/${type}`;
       const response = await axios.get(endpoint, { withCredentials: true });
       if (response.data.success) {
         setModalData(response.data[type]);

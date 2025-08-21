@@ -55,7 +55,7 @@ useEffect(() => {
 const handleFollowToggle = async () => {
   try {
     const response = await axios.post(
-      `${API_BASE}/api/v1/user/followorunfollow/${post.author._id}`,
+      `${API_BASE}/user/followorunfollow/${post.author._id}`,
       {},
       { withCredentials: true }
     );
@@ -74,7 +74,7 @@ const handleFollowToggle = async () => {
     try {
       const action = liked ? "dislike" : "like";
       const res = await axios.get(
-        `${API_BASE}/api/v1/post/${post._id}/${action}`,
+        `${API_BASE}/post/${post._id}/${action}`,
         { withCredentials: true }
       );
       console.log(res.data);
@@ -105,7 +105,7 @@ const handleFollowToggle = async () => {
   const commentHandler = async () => {
     try {
       const res = await axios.post(
-        `${API_BASE}/api/v1/post/${post._id}/comment`,
+        `${API_BASE}/post/${post._id}/comment`,
         { text },
         {
           headers: {
@@ -135,7 +135,7 @@ const handleFollowToggle = async () => {
   const deletePostHandler = async () => {
     try {
       const res = await axios.delete(
-        `${API_BASE}/api/v1/post/delete/${post?._id}`,
+        `${API_BASE}/post/delete/${post?._id}`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -153,7 +153,7 @@ const handleFollowToggle = async () => {
   const bookmarkHandler = async () => {
   try {
     const res = await axios.get(
-      `${API_BASE}/api/v1/post/${post?._id}/bookmark`,
+      `${API_BASE}/post/${post?._id}/bookmark`,
       { withCredentials: true }
     );
 
