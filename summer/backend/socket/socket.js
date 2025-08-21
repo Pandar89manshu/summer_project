@@ -5,13 +5,14 @@ import http from "http";
 const app = express();
 
 const server = http.createServer(app);
-
 const io = new Server(server, {
-    cors:{
-       origin:"https://your-frontend.nestify.app",
-        methods:['GET','POST']
-    }
-})
+  cors: {
+    origin: "https://connectify4u.netlify.app",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
 
 const userSocketMap = {} ; // this map stores socket id corresponding the user id; userId -> socketId
 
