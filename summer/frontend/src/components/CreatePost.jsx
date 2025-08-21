@@ -37,7 +37,7 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${API_BASE}/api/v1/post/addpost`,
+        `${API_BASE}/post/addpost`,
         formData,
         {
           headers: {
