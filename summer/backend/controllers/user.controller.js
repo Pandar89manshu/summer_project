@@ -36,6 +36,9 @@ export const register = async (req, res) => {
 }
 export const login = async (req, res) => {
     try {
+
+        const isProduction = process.env.NODE_ENV === "production";
+        
         const { email, password } = req.body;
         if (!email || !password) {
             return res.status(401).json({

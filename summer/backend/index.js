@@ -8,38 +8,46 @@ import postRoute from "./routes/post.route.js";
 import messageRoute from "./routes/message.route.js";
 import { app, server } from "./socket/socket.js";
 import path from "path";
- 
+
 dotenv.config({});
 
 const PORT = process.env.PORT || 3000;
 
-//middleares
+// middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(urlencoded({extended:true}));
+app.use(urlencoded({ extended: true }));
 
-app.get("/",(req,res)=>{
-    return res.status(200).json({
-        message:"i am coming from backend",
-        success:true
-    })
-})
+// ✅ allow multiple origins (local + netlify)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://connectify4u.netlify.app"
+];
 
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true,
-};
-app.use(cors(corsOptions));
+app.get("/", (req, res) => {
+  return res.status(200).json({
+    message: "i am coming from backend",
+    success: true
+  });
+});
 
-// yha pr apni api ayengi
-
+// API routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/message", messageRoute);
 
-
 server.listen(PORT, () => {
   connectDB();
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
