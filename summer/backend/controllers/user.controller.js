@@ -99,7 +99,8 @@ export const logout = async (_, res) => {
     res
       .clearCookie("token", {
         httpOnly: true,
-        sameSite: "None", // or "Lax" if you're using localhost only
+         sameSite: isProduction ? "none" : "lax",
+  secure: isProduction ? true : false,
         secure: true,     // true if you're on https or working cross-origin
       })
       .status(200)
