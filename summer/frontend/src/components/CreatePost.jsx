@@ -1,5 +1,10 @@
 import React, { useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog"; // ✅ Import Title + Description
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
@@ -9,7 +14,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "@/redux/postSlice";
-import API_BASE from '@/confige';
+import API_BASE from "@/confige";
 
 const CreatePost = ({ open, setOpen }) => {
   const imageRef = useRef();
@@ -30,22 +35,18 @@ const CreatePost = ({ open, setOpen }) => {
     }
   };
 
-  const createPostHandler = async (e) => {
+  const createPostHandler = async () => {
     const formData = new FormData();
     formData.append("caption", caption);
     if (imagePreview) formData.append("image", file);
     try {
       setLoading(true);
-      const res = await axios.post(
-        `${API_BASE}/post/addpost`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true,
-        }
-      );
+      const res = await axios.post(`${API_BASE}/post/addpost`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
       if (res.data.success) {
         dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
@@ -64,29 +65,29 @@ const CreatePost = ({ open, setOpen }) => {
         onInteractOutside={() => setOpen(false)}
         className="bg-gray-300"
       >
-        <div className="flex justify-center">
-          <div className="w-fit border-b-2 border-black px-4">
-            <DialogHeader className="text-lg font-semibold text-center">
-              Create New Post
-            </DialogHeader>
-          </div>
-        </div>
+        {/* ✅ Accessible Title + Description */}
+        <DialogTitle className="text-lg font-semibold text-center">
+          Create New Post
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Use this dialog to create a new post with caption and image.
+        </DialogDescription>
 
         <div className="flex gap-3 items-center">
           <Avatar>
             <AvatarImage src={user?.profilePicture} alt="img" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <div>
-            <h1 className="font-semibold text-l">{user?.username}</h1>
-          </div>
+          <h1 className="font-semibold text-l">{user?.username}</h1>
         </div>
+
         <Textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           className="focus-visible:ring-transparent border-none bg-gray-200"
           placeholder="Write a caption..."
         />
+
         {imagePreview && (
           <div className="w-full h-64 flex items-center justify-center">
             <img
@@ -96,18 +97,21 @@ const CreatePost = ({ open, setOpen }) => {
             />
           </div>
         )}
+
         <input
           ref={imageRef}
           type="file"
           className="hidden"
           onChange={fileChangeHandler}
         />
+
         <Button
           onClick={() => imageRef.current.click()}
           className="w-fit mx-auto bg-[#4b7697] hover:bg-[#033f63]"
         >
           Select from computer
         </Button>
+
         {imagePreview &&
           (loading ? (
             <Button>
@@ -115,11 +119,7 @@ const CreatePost = ({ open, setOpen }) => {
               Please wait
             </Button>
           ) : (
-            <Button
-              onClick={createPostHandler}
-              type="submit"
-              className="w-full"
-            >
+            <Button onClick={createPostHandler} type="submit" className="w-full">
               Post
             </Button>
           ))}
