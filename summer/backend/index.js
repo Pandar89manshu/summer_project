@@ -20,7 +20,7 @@ app.use(urlencoded({ extended: true }));
 
 // ✅ allow multiple origins (local + netlify)
 const allowedOrigins = [
-  "http://localhost:5173",
+  
   "https://connectify4u.netlify.app"
 ];
 
