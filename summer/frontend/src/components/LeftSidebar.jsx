@@ -38,7 +38,7 @@ const LeftSidebar = () => {
         dispatch(setSocket(null)); // ✅ clear from Redux
       }
 
-      const res = await axios.get(`${API_BASE}/api/v1/user/logout`, {
+      const res = await axios.get(`${API_BASE}/user/logout`, {
         withCredentials: true,
       });
 
