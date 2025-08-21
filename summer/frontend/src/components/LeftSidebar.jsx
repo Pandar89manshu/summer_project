@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import CreatePost from "./CreatePost";
-import API_BASE from '@/confige'; // ✅ centralized API base
+import API_BASE from '../confige'; // ✅ centralized API base
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
