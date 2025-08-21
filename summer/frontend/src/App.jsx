@@ -13,39 +13,21 @@ import { setSocket } from './redux/socketSlice'
 import { setOnlineUsers } from './redux/chatSlice'
 import { setLikeNotification } from './redux/rtnSlice'
 import ProtectedRoutes from './components/ProtectedRoutes'
-
+import API_BASE from './confige'; // ✅ centralized API base
 
 const browserRouter = createBrowserRouter([
   {
     path: "/",
     element: <ProtectedRoutes><MainLayout /></ProtectedRoutes>,
     children: [
-      {
-        path: '/',
-        element: <ProtectedRoutes><Home /></ProtectedRoutes>
-      },
-      {
-        path: '/profile/:id',
-        element: <ProtectedRoutes> <Profile /></ProtectedRoutes>
-      },
-      {
-        path: '/account/edit',
-        element: <ProtectedRoutes><EditProfile /></ProtectedRoutes>
-      },
-      {
-        path: '/chat',
-        element: <ProtectedRoutes><ChatPage /></ProtectedRoutes>
-      },
+      { path: '/', element: <ProtectedRoutes><Home /></ProtectedRoutes> },
+      { path: '/profile/:id', element: <ProtectedRoutes><Profile /></ProtectedRoutes> },
+      { path: '/account/edit', element: <ProtectedRoutes><EditProfile /></ProtectedRoutes> },
+      { path: '/chat', element: <ProtectedRoutes><ChatPage /></ProtectedRoutes> },
     ]
   },
-  {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/signup',
-    element: <Signup />
-  },
+  { path: '/login', element: <Login /> },
+  { path: '/signup', element: <Signup /> },
 ])
 
 function App() {
@@ -54,39 +36,36 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user) {
-      const socketio = io('http://localhost:3000', {
-        query: {
-          userId: user?._id
-        },
-        transports: ['websocket']
-      });
-      dispatch(setSocket(socketio));
+    if (!user) return;
 
-      // listen all the events
-      socketio.on('getOnlineUsers', (onlineUsers) => {
-        dispatch(setOnlineUsers(onlineUsers));
-      });
+    // ✅ Connect to deployed backend
+    const socketio = io(API_BASE.replace("/api/v1",""), {
+      query: { userId: user._id },
+      transports: ['websocket'],
+      withCredentials: true
+    });
+    dispatch(setSocket(socketio));
 
-      socketio.on('notification', (notification) => {
-        dispatch(setLikeNotification(notification));
-      });
+    // Listen for online users
+    socketio.on('getOnlineUsers', (onlineUsers) => {
+      dispatch(setOnlineUsers(onlineUsers));
+    });
 
-      return () => {
-        socketio.close();
-        dispatch(setSocket(null));
-      }
-    } else if (socket) {
-      socket.close();
+    // Listen for notifications
+    socketio.on('notification', (notification) => {
+      dispatch(setLikeNotification(notification));
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socketio.disconnect();
       dispatch(setSocket(null));
-    }
+    };
   }, [user, dispatch]);
 
   return (
-    <>
-      <RouterProvider router={browserRouter} />
-    </>
+    <RouterProvider router={browserRouter} />
   )
 }
 
-export default App
+export default App;
