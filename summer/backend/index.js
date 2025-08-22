@@ -21,7 +21,7 @@ app.use(urlencoded({ extended: true }));
 // ✅ allow multiple origins (local + netlify)
 const allowedOrigins = [
   
-  "https://connectify4u.netlify.app"
+  "https://connectify4u.netlify.app" ||  "http://localhost:5173/"
 ];
 
 app.use(cors({

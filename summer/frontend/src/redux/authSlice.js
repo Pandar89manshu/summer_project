@@ -1,29 +1,27 @@
-import {createSlice} from "@reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit";
 
 const authSlice = createSlice({
-    name:"auth",
-    initialState:{
-        user:null,
-        suggestedUsers:[],
-        userProfile:null,
-        selectedUser:null,
+  name: "auth",
+  initialState: {
+    user: null,
+    suggestedUsers: [],
+    userProfile: null,
+    selectedUser: null,
+  },
+  reducers: {
+    setAuthUser: (state, action) => {
+      state.user = action.payload;
     },
-  reducers:{
-     setAuthUser:(state,action)=>{
-        state.user=action.payload;
-     },
-    setSuggestedUsers:(state,action) => {
-            state.suggestedUsers = action.payload;
-        },
-    setUserProfile:(state,action) => {
-            state.userProfile = action.payload;
-        },
-    setSelectedUser:(state,action) => {
-            state.selectedUser = action.payload;
-        }
-,
-
-     // 🔥 NEW: update follow/unfollow in Redux
+    setSuggestedUsers: (state, action) => {
+      state.suggestedUsers = action.payload;
+    },
+    setUserProfile: (state, action) => {
+      state.userProfile = action.payload;
+    },
+    setSelectedUser: (state, action) => {
+      state.selectedUser = action.payload;
+    },
+    // 🔥 NEW: update follow/unfollow in Redux
     toggleFollow: (state, action) => {
       const { targetUserId, currentUserId } = action.payload;
 
@@ -38,11 +36,16 @@ const authSlice = createSlice({
           state.selectedUser.followers.push(currentUserId);
         }
       }
-    
-    
-    }
+    },
+  },
 });
 
+export const {
+  setAuthUser,
+  setSuggestedUsers,
+  setUserProfile,
+  setSelectedUser,
+  toggleFollow,
+} = authSlice.actions;
 
-export const {setAuthUser,setSuggestedUsers,setUserProfile,setSelectedUser, toggleFollow,} = authSlice.actions;
 export default authSlice.reducer;
