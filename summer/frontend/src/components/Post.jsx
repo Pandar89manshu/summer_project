@@ -26,15 +26,10 @@ const Post = ({ post }) => {
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
-  const [isFollowing, setIsFollowing] = useState(
-    (post.author.followers || []).includes(user?._id)
-  );
+  
 
   const currentPost = posts.find((p) => p._id === post._id) || post;
 
-  useEffect(() => {
-    setIsFollowing((currentPost.author.followers || []).includes(user?._id));
-  }, [currentPost.author.followers, user?._id]);
 
   useEffect(() => {
     setBookmarked(currentPost.bookmarks?.includes(user?._id));
@@ -44,36 +39,6 @@ const Post = ({ post }) => {
     setText(e.target.value.trim() ? e.target.value : "");
   };
 
-  const handleFollowToggle = async () => {
-    try {
-      const res = await axios.post(
-        `${API_BASE}/user/followorunfollow/${post.author._id}`,
-        {},
-        { withCredentials: true }
-      );
-      if (res.data.success) {
-        const updatedPosts = posts.map((p) =>
-          p.author._id === post.author._id
-            ? {
-                ...p,
-                author: {
-                  ...p.author,
-                  followers: isFollowing
-                    ? (p.author.followers || []).filter((id) => id !== user._id)
-                    : [...(p.author.followers || []), user._id],
-                },
-              }
-            : p
-        );
-        dispatch(setPosts(updatedPosts));
-        setIsFollowing(!isFollowing);
-        toast.success(res.data.message);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
-    }
-  };
 
   const likeOrDislikeHandler = async () => {
     try {
@@ -159,7 +124,7 @@ const Post = ({ post }) => {
   return (
     <div className="my-8 w-full max-w-sm mx-auto border-b border-black pb-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex justify-center items-center gap-2">
           <Link to={`/profile/${post.author?._id}`}>
             <Avatar>
               <AvatarImage src={post.author?.profilePicture} alt="post_image" />
@@ -171,18 +136,6 @@ const Post = ({ post }) => {
               {post.author?.username}
             </Link>
 
-            {user?._id === post.author._id ? (
-              <Badge className="bg-[#033f63] border-black text-gray-200" variant="secondary">
-                Author
-              </Badge>
-            ) : (
-              <Button
-                className="h-6 px-4 py-4 text-l bg-[#033f63] hover:bg-[#033f63] text-gray-200 border-black"
-                onClick={handleFollowToggle}
-              >
-                {isFollowing ? "Unfollow" : "Follow"}
-              </Button>
-            )}
           </div>
         </div>
 
