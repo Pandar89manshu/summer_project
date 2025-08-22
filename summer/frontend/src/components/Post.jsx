@@ -46,8 +46,6 @@ useEffect(() => {
   }
 }, [post?.bookmarks, user?._id]);
 
-
-
 const handleFollowToggle = async () => {
   try {
     const response = await axios.post(
@@ -55,12 +53,30 @@ const handleFollowToggle = async () => {
       {},
       { withCredentials: true }
     );
+
     if (response.data.success) {
-   
-        // ✅ update Redux so profile/suggested users also update
-  dispatch(
-    toggleFollow({ targetUserId: post.author._id, currentUserId: user._id })
-  );
+      // ✅ Update posts array in Redux so isFollowing re-computes correctly
+      const updatedPosts = posts.map((p) =>
+        p.author._id === post.author._id
+          ? {
+              ...p,
+              author: {
+                ...p.author,
+                followers: isFollowing
+                  ? p.author.followers.filter((id) => id !== user._id)
+                  : [...p.author.followers, user._id],
+              },
+            }
+          : p
+      );
+
+      dispatch(setPosts(updatedPosts));
+
+      // ✅ Also update profile/suggested users Redux
+      dispatch(
+        toggleFollow({ targetUserId: post.author._id, currentUserId: user._id })
+      );
+
       toast.success(response.data.message);
     }
   } catch (error) {
@@ -68,7 +84,6 @@ const handleFollowToggle = async () => {
     toast.error("Something went wrong");
   }
 };
-
 
   const likeOrDislikeHandler = async () => {
     try {
