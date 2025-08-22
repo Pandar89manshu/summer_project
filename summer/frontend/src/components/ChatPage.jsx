@@ -8,7 +8,7 @@ import { MessageCircleCode } from "lucide-react";
 import Messages from "./Messages";
 import axios from "axios";
 import { setMessages } from "@/redux/chatSlice";
-import API_BASE from '@/confige';
+import API_BASE from "@/confige";
 
 const ChatPage = () => {
   const [textMessage, setTextMessage] = useState("");
@@ -47,17 +47,14 @@ const ChatPage = () => {
     <div className="flex ml-[20%] h-screen bg-[#033f63] text-white">
       {/* Sidebar */}
       <aside className="w-full md:w-1/4 p-4 bg-gray-200 border-r border-black text-black">
-
-      <div className="flex justify-content-cen">
-
-      </div>
-       <h2
-  className={`text-2xl font-bold text-center mb-4 text-[#033f63] ${
-    selectedUser ? 'border-b border-[#1f4f71] pb-6' : ''
-  }`}
->
-  Chats
-</h2>
+        <div className="flex justify-content-cen"></div>
+        <h2
+          className={`text-2xl font-bold text-center mb-4 text-[#033f63] ${
+            selectedUser ? "border-b border-[#1f4f71] pb-6" : ""
+          }`}
+        >
+          Chats
+        </h2>
 
         <div className="overflow-y-auto h-[82vh] space-y-2">
           {suggestedUsers.map((suggestedUser) => {
@@ -74,7 +71,9 @@ const ChatPage = () => {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 block w-3 h-3 rounded-full bg-green-whir border-2 border-white" />
+                    <span className="absolute bottom-0 right-0 text-xs text-green-600 font-semibold">
+                      Online
+                    </span>
                   )}
                 </div>
                 <div>
@@ -126,22 +125,15 @@ const ChatPage = () => {
         </main>
       ) : (
         <main className="flex-1 flex items-center justify-center bg-gray-300 text-white text-center">
-  <div>
-    <MessageCircleCode className="w-32 h-32 text-white mb-4 mx-auto" />
-    <h1 className="text-xl font-semibold">Your messages</h1>
-    <p className="text-sm">
-      Send a message to start a conversation
-    </p>
-  </div>
-</main>
-
+          <div>
+            <MessageCircleCode className="w-32 h-32 text-white mb-4 mx-auto" />
+            <h1 className="text-xl font-semibold">Your messages</h1>
+            <p className="text-sm">Send a message to start a conversation</p>
+          </div>
+        </main>
       )}
     </div>
   );
 };
 
 export default ChatPage;
-
-
-
-
