@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import API_BASE from "@/confige";
 
 const Post = ({ post }) => {
+  const { id: userId } = useParams();
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { posts } = useSelector((store) => store.post);
@@ -24,7 +25,8 @@ const Post = ({ post }) => {
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
- 
+  
+
    const { userProfile: globalUserProfile, user } = useSelector(
      (store) => store.auth
    );
