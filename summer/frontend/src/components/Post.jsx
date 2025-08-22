@@ -14,50 +14,23 @@ import { Link } from "react-router-dom";
 import API_BASE from "@/confige";
 
 const Post = ({ post }) => {
+  const { posts } = useSelector((store) => store.post);
+  const { user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
-  const { posts } = useSelector((store) => store.post);
-  const dispatch = useDispatch();
-   const { user } = useSelector((store) => store.auth);
-  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
 
-  const isFollowing = post.author.followers?.includes(user?._id);
-const handleFollowToggle = async () => {
-  try {
-    const response = await axios.post(
-      `${API_BASE}/user/followorunfollow/${post.author._id}`,
-      {},
-      { withCredentials: true }
-    );
+  // Always get latest post data from Redux
+  const currentPost = posts.find((p) => p._id === post._id) || post;
+  const liked = currentPost.likes.includes(user?._id);
+  const isFollowing = currentPost.author.followers?.includes(user?._id);
 
-    if (response.data.success) {
-      const updatedPosts = posts.map((p) =>
-        p.author._id === post.author._id
-          ? {
-              ...p,
-              author: {
-                ...p.author,
-                followers: isFollowing
-                  ? p.author.followers.filter((id) => id !== user._id)
-                  : [...p.author.followers, user._id],
-              },
-            }
-          : p
-      );
-      dispatch(setPosts(updatedPosts));
-      toast.success(response.data.message);
-    }
-  } catch (error) {
-    toast.error("Something went wrong");
-  }
-};
-
-  
   useEffect(() => {
     if (post?.bookmarks && user?._id) {
       setBookmarked(post.bookmarks.includes(user._id));
@@ -68,6 +41,36 @@ const handleFollowToggle = async () => {
     setText(e.target.value.trim() ? e.target.value : "");
   };
 
+  const handleFollowToggle = async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/user/followorunfollow/${post.author._id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        const updatedPosts = posts.map((p) =>
+          p.author._id === post.author._id
+            ? {
+                ...p,
+                author: {
+                  ...p.author,
+                  followers: isFollowing
+                    ? p.author.followers.filter((id) => id !== user._id)
+                    : [...p.author.followers, user._id],
+                },
+              }
+            : p
+        );
+        dispatch(setPosts(updatedPosts));
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error following/unfollowing:", error);
+      toast.error("Something went wrong");
+    }
+  };
 
   const likeOrDislikeHandler = async () => {
     try {
@@ -76,11 +79,9 @@ const handleFollowToggle = async () => {
         withCredentials: true,
       });
       if (res.data.success) {
-        const updatedLikes = liked ? postLike - 1 : postLike + 1;
-        setPostLike(updatedLikes);
-        setLiked(!liked);
+        setPostLike(liked ? postLike - 1 : postLike + 1);
 
-        const updatedPostData = posts.map((p) =>
+        const updatedPosts = posts.map((p) =>
           p._id === post._id
             ? {
                 ...p,
@@ -90,11 +91,11 @@ const handleFollowToggle = async () => {
               }
             : p
         );
-        dispatch(setPosts(updatedPostData));
+        dispatch(setPosts(updatedPosts));
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -109,37 +110,37 @@ const handleFollowToggle = async () => {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
 
-        const updatedPostData = posts.map((p) =>
+        const updatedPosts = posts.map((p) =>
           p._id === post._id ? { ...p, comments: updatedCommentData } : p
         );
-        dispatch(setPosts(updatedPostData));
+        dispatch(setPosts(updatedPosts));
         toast.success(res.data.message);
         setText("");
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   const deletePostHandler = async () => {
     try {
-      const res = await axios.delete(`${API_BASE}/post/delete/${post?._id}`, {
+      const res = await axios.delete(`${API_BASE}/post/delete/${post._id}`, {
         withCredentials: true,
       });
       if (res.data.success) {
-        const updatedPostData = posts.filter((postItem) => postItem?._id !== post?._id);
-        dispatch(setPosts(updatedPostData));
+        const updatedPosts = posts.filter((p) => p._id !== post._id);
+        dispatch(setPosts(updatedPosts));
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.messsage);
+      console.error(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
   const bookmarkHandler = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/post/${post?._id}/bookmark`, {
+      const res = await axios.get(`${API_BASE}/post/${post._id}/bookmark`, {
         withCredentials: true,
       });
       if (res.data.success) {
@@ -147,7 +148,7 @@ const handleFollowToggle = async () => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
