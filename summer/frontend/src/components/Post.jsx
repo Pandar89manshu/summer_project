@@ -78,7 +78,7 @@ const handleFollowToggle = async () => {
       // 🔹 Update auth slice (for profile + suggested users)
       dispatch(toggleFollow({ targetUserId: post.author._id, currentUserId: user._id }));
 
-      
+
       toast.success(response.data.message);
     }
   } catch (error) {
@@ -211,7 +211,12 @@ const handleFollowToggle = async () => {
     ) : (
      <Button
   className="h-6 px-4 py-4 text-l bg-[#033f63] hover:bg-[#033f63]  text-gray-200 border-black"
-  onClick={handleFollowToggle}
+    onClick={() => {
+    handleFollowToggle();
+    dispatch(
+      toggleFollow({ targetUserId: selectedUser._id, currentUserId: user._id })
+    );
+  }}
 >
   {isFollowing ? "Unfollow" : "Follow"}
 </Button>
