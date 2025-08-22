@@ -124,34 +124,33 @@ const Post = ({ post }) => {
   return (
     <div className="my-8 w-full max-w-sm mx-auto border-b border-black pb-6">
       <div className="flex items-center justify-between">
-        <div className="flex justify-center items-center gap-2">
-          <Link to={`/profile/${post.author?._id}`}>
-            <Avatar>
-              <AvatarImage src={post.author?.profilePicture} alt="post_image" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to={`/profile/${post.author._id}`} className="font-semibold hover:underline">
-              {post.author?.username}
-            </Link>
+  <div className="flex items-center gap-2">
+    <Link to={`/profile/${post.author?._id}`} className="flex items-center">
+      <Avatar>
+        <AvatarImage src={post.author?.profilePicture} alt="post_image" />
+        <AvatarFallback>CN</AvatarFallback>
+      </Avatar>
+      <span className="ml-2 font-semibold hover:underline">{post.author?.username}</span>
+    </Link>
+  </div>
 
-          </div>
-        </div>
-
-        {user && user?._id === post?.author._id && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <MoreHorizontal className="cursor-pointer" />
-            </DialogTrigger>
-            <DialogContent className="flex flex-col items-center text-sm text-center">
-              <Button onClick={deletePostHandler} variant="ghost" className="cursor-pointer w-fit">
-                Delete
-              </Button>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+  {user && user?._id === post?.author._id && (
+    <Dialog>
+      <DialogTrigger asChild>
+        <MoreHorizontal className="cursor-pointer" />
+      </DialogTrigger>
+      <DialogContent className="flex flex-col items-center text-sm text-center">
+        <Button
+          onClick={deletePostHandler}
+          variant="ghost"
+          className="cursor-pointer w-fit"
+        >
+          Delete
+        </Button>
+      </DialogContent>
+    </Dialog>
+  )}
+</div>
 
       <img className="rounded-sm my-2 w-full aspect-square object-cover" src={post.image} alt="post_img" />
 
