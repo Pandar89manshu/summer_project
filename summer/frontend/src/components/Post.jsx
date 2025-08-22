@@ -7,13 +7,14 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "sonner";
 import { setPosts } from "@/redux/postSlice";
+import { setUserProfile } from "@/redux/authSlice";
 import { Link } from "react-router-dom";
 import API_BASE from "@/confige";
 
 const Post = ({ post }) => {
-  const { posts } = useSelector((store) => store.post);
-  const { user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
+  const { posts } = useSelector((store) => store.post);
+  const { user, userProfile } = useSelector((store) => store.auth);
 
   // Always get latest post data from Redux
   const currentPost = posts.find((p) => p._id === post._id) || post;
@@ -29,7 +30,7 @@ const Post = ({ post }) => {
       );
 
       if (response.data.success) {
-        // Update Redux posts
+        // 1️⃣ Update posts
         const updatedPosts = posts.map((p) =>
           p.author._id === post.author._id
             ? {
@@ -44,10 +45,23 @@ const Post = ({ post }) => {
             : p
         );
         dispatch(setPosts(updatedPosts));
+
+        // 2️⃣ Update profile if needed
+        if (post.author._id === userProfile?._id) {
+          dispatch(
+            setUserProfile({
+              ...userProfile,
+              followers: isFollowing
+                ? userProfile.followers.filter((id) => id !== user._id)
+                : [...userProfile.followers, user._id],
+            })
+          );
+        }
+
         toast.success(response.data.message);
       }
     } catch (error) {
-      console.error("Error following/unfollowing:", error);
+      console.error("Follow/unfollow error:", error);
       toast.error("Something went wrong");
     }
   };
@@ -62,6 +76,7 @@ const Post = ({ post }) => {
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </Link>
+
           <div className="flex items-center gap-3">
             <Link
               to={`/profile/${post.author._id}`}
@@ -81,7 +96,7 @@ const Post = ({ post }) => {
           </div>
         </div>
 
-        {user && user?._id === post?.author._id && (
+        {user?._id === post.author._id && (
           <Dialog>
             <DialogTrigger asChild>
               <MoreHorizontal className="cursor-pointer" />
@@ -95,7 +110,6 @@ const Post = ({ post }) => {
         )}
       </div>
 
-      {/* Your post content here */}
       <img
         className="rounded-sm my-2 w-full aspect-square object-cover"
         src={post.image}
