@@ -61,6 +61,10 @@ const handleFollowToggle = async () => {
     );
     if (response.data.success) {
       setIsFollowing(!isFollowing);
+        // ✅ update Redux so profile/suggested users also update
+  dispatch(
+    toggleFollow({ targetUserId: post.author._id, currentUserId: user._id })
+  );
       toast.success(response.data.message);
     }
   } catch (error) {
