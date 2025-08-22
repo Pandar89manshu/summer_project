@@ -74,8 +74,7 @@ const ChatPage = () => {
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 block w-3 h-3 rounded-full bg-green-whir border-2 border-green-500" /> 
-                    
+                    <span className="absolute bottom-0 right-0 block w-3 h-3 rounded-full  border-2 border-green-500" /> 
                   )}
                 </div>
                 <div>
