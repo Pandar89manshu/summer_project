@@ -70,7 +70,7 @@ const LeftSidebar = () => {
       navigate("/chat");
     } else if (textType === "Notifications") {
       setShowNotificationPopup(!showNotificationPopup);
-      dispatch(clearLikeNotifications());
+     
     }
   };
 
