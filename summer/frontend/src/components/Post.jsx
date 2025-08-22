@@ -16,7 +16,6 @@ import API_BASE from "@/confige";
 const Post = ({ post }) => {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
-  const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
@@ -27,11 +26,41 @@ const Post = ({ post }) => {
     post.bookmarks?.includes(user?._id) || false
   );
 
-  // ✅ Make isFollowing a state
-  const [isFollowing, setIsFollowing] = useState(
-    post.author.followers?.includes(user?._id) || false
+  const { userProfile: globalUserProfile, user } = useSelector(
+    (store) => store.auth
   );
+  const [isFollowing, setIsFollowing] = useState(
+      globalUserProfile?.followers.includes(user?._id)
+    );
 
+    
+      useEffect(() => {
+        setUserProfile(globalUserProfile);
+        setIsFollowing(globalUserProfile?.followers.includes(user?._id));
+      }, [globalUserProfile, user]);
+    
+  const handleFollowToggle = async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/user/followorunfollow/${userId}`,
+        {},
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        setIsFollowing(!isFollowing);
+        setUserProfile((prevProfile) => ({
+          ...prevProfile,
+          followers: isFollowing
+            ? prevProfile.followers.filter(
+                (followerId) => followerId !== user?._id
+              )
+            : [...prevProfile.followers, user?._id],
+        }));
+      }
+    } catch (error) {
+      console.error("Error following/unfollowing user:", error);
+    }
+  };
   
   useEffect(() => {
     if (post?.bookmarks && user?._id) {
@@ -43,40 +72,6 @@ const Post = ({ post }) => {
     setText(e.target.value.trim() ? e.target.value : "");
   };
 
-  const handleFollowToggle = async () => {
-    try {
-      const response = await axios.post(
-        `${API_BASE}/user/followorunfollow/${post.author._id}`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (response.data.success) {
-        // Toggle local state immediately
-        setIsFollowing(!isFollowing);
-
-       const updatedPosts = posts.map((p) =>
-        p.author._id === post.author._id
-          ? {
-              ...p,
-              author: {
-                ...p.author,
-                followers: newIsFollowing
-                  ? [...p.author.followers, user._id]
-                  : p.author.followers.filter((id) => id !== user._id),
-              },
-            }
-          : p
-      );
-        dispatch(setPosts(updatedPosts));
-
-        toast.success(response.data.message);
-      }
-    } catch (error) {
-      console.error("Error following/unfollowing:", error);
-      toast.error("Something went wrong");
-    }
-  };
 
   const likeOrDislikeHandler = async () => {
     try {

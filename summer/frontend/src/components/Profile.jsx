@@ -187,9 +187,7 @@ const Profile = () => {
                   <Button
                     onClick={() => {
     handleFollowToggle();
-    dispatch(
-      toggleFollow({ targetUserId: selectedUser._id, currentUserId: user._id })
-    );
+    
   }}
                     
                     className=" bg-[#033f63] text-gray-200 h-8 border-2 border-black"
