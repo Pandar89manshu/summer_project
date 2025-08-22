@@ -26,9 +26,9 @@ const Post = ({ post }) => {
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
-  const [isFollowing, setIsFollowing] = useState(
-  post.author.followers?.includes(user?._id)
-);
+
+  const isFollowing = post.author.followers?.includes(user?._id);
+
   
 
   const changeEventHandler = (e) => {
@@ -39,10 +39,6 @@ const Post = ({ post }) => {
       setText("");
     }
   };
-
-  useEffect(() => {
-  setIsFollowing(post.author.followers?.includes(user?._id));
-}, [post.author.followers, user?._id]);
 
 useEffect(() => {
   if (post?.bookmarks && user?._id) {
