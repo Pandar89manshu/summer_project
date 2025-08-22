@@ -26,41 +26,37 @@ const Post = ({ post }) => {
     post.bookmarks?.includes(user?._id) || false
   );
 
-  const { userProfile: globalUserProfile, user } = useSelector(
-    (store) => store.auth
-  );
-  const [isFollowing, setIsFollowing] = useState(
-      globalUserProfile?.followers.includes(user?._id)
+  const isFollowing = post.author.followers?.includes(user?._id);
+const handleFollowToggle = async () => {
+  try {
+    const response = await axios.post(
+      `${API_BASE}/user/followorunfollow/${post.author._id}`,
+      {},
+      { withCredentials: true }
     );
 
-    
-      useEffect(() => {
-        setUserProfile(globalUserProfile);
-        setIsFollowing(globalUserProfile?.followers.includes(user?._id));
-      }, [globalUserProfile, user]);
-    
-  const handleFollowToggle = async () => {
-    try {
-      const response = await axios.post(
-        `${API_BASE}/user/followorunfollow/${userId}`,
-        {},
-        { withCredentials: true }
+    if (response.data.success) {
+      const updatedPosts = posts.map((p) =>
+        p.author._id === post.author._id
+          ? {
+              ...p,
+              author: {
+                ...p.author,
+                followers: isFollowing
+                  ? p.author.followers.filter((id) => id !== user._id)
+                  : [...p.author.followers, user._id],
+              },
+            }
+          : p
       );
-      if (response.data.success) {
-        setIsFollowing(!isFollowing);
-        setUserProfile((prevProfile) => ({
-          ...prevProfile,
-          followers: isFollowing
-            ? prevProfile.followers.filter(
-                (followerId) => followerId !== user?._id
-              )
-            : [...prevProfile.followers, user?._id],
-        }));
-      }
-    } catch (error) {
-      console.error("Error following/unfollowing user:", error);
+      dispatch(setPosts(updatedPosts));
+      toast.success(response.data.message);
     }
-  };
+  } catch (error) {
+    toast.error("Something went wrong");
+  }
+};
+
   
   useEffect(() => {
     if (post?.bookmarks && user?._id) {
