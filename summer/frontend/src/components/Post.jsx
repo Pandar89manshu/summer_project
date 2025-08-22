@@ -27,13 +27,13 @@ const Post = ({ post }) => {
     post.bookmarks?.includes(user?._id) || false
   );
   const [isFollowing, setIsFollowing] = useState(
-    post.author.followers?.includes(user?._id)
+    (post.author.followers || []).includes(user?._id)
   );
 
   const currentPost = posts.find((p) => p._id === post._id) || post;
 
   useEffect(() => {
-    setIsFollowing(currentPost.author.followers?.includes(user?._id));
+    setIsFollowing((currentPost.author.followers || []).includes(user?._id));
   }, [currentPost.author.followers, user?._id]);
 
   useEffect(() => {
@@ -52,7 +52,6 @@ const Post = ({ post }) => {
         { withCredentials: true }
       );
       if (res.data.success) {
-        // Update post author followers in Redux
         const updatedPosts = posts.map((p) =>
           p.author._id === post.author._id
             ? {
@@ -60,8 +59,8 @@ const Post = ({ post }) => {
                 author: {
                   ...p.author,
                   followers: isFollowing
-                    ? p.author.followers.filter((id) => id !== user._id)
-                    : [...p.author.followers, user._id],
+                    ? (p.author.followers || []).filter((id) => id !== user._id)
+                    : [...(p.author.followers || []), user._id],
                 },
               }
             : p
