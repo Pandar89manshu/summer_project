@@ -13,6 +13,8 @@ import { Badge } from "./ui/badge";
 import { FaRegBookmark, FaBookmark } from "react-icons/fa"; // Reg = outlined, FaBookmark = filled
 import { Link } from "react-router-dom"; // make sure it's imported at top
 import API_BASE from '@/confige';
+import { toggleFollow } from "@/redux/authSlice";
+
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
@@ -72,11 +74,11 @@ const handleFollowToggle = async () => {
 
       dispatch(setPosts(updatedPosts));
 
-      // ✅ Also update profile/suggested users Redux
-      dispatch(
-        toggleFollow({ targetUserId: post.author._id, currentUserId: user._id })
-      );
+     
+      // 🔹 Update auth slice (for profile + suggested users)
+      dispatch(toggleFollow({ targetUserId: post.author._id, currentUserId: user._id }));
 
+      
       toast.success(response.data.message);
     }
   } catch (error) {
