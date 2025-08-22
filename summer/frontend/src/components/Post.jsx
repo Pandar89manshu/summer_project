@@ -1,106 +1,99 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Bookmark, MessageCircle, MoreHorizontal, Send } from "lucide-react";
+import { MessageCircle, MoreHorizontal } from "lucide-react";
 import { Button } from "./ui/button";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegBookmark, FaBookmark } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "sonner";
 import { setPosts, setSelectedPost } from "@/redux/postSlice";
 import { Badge } from "./ui/badge";
-import { FaRegBookmark, FaBookmark } from "react-icons/fa"; // Reg = outlined, FaBookmark = filled
-import { Link } from "react-router-dom"; // make sure it's imported at top
-import API_BASE from '@/confige';
-import { toggleFollow } from "@/redux/authSlice";
-
+import { Link } from "react-router-dom";
+import API_BASE from "@/confige";
 
 const Post = ({ post }) => {
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
+  const dispatch = useDispatch();
+
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
-  const dispatch = useDispatch();
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
 
-  const isFollowing = post.author.followers?.includes(user?._id);
+  // ✅ Make isFollowing a state
+  const [isFollowing, setIsFollowing] = useState(
+    post.author.followers?.includes(user?._id) || false
+  );
 
-  
+  // Recompute when post.author.followers or user changes
+  useEffect(() => {
+    setIsFollowing(post.author.followers?.includes(user?._id) || false);
+  }, [post.author.followers, user?._id]);
+
+  useEffect(() => {
+    if (post?.bookmarks && user?._id) {
+      setBookmarked(post.bookmarks.includes(user._id));
+    }
+  }, [post?.bookmarks, user?._id]);
 
   const changeEventHandler = (e) => {
-    const inputText = e.target.value;
-    if (inputText.trim()) {
-      setText(inputText);
-    } else {
-      setText("");
-    }
+    setText(e.target.value.trim() ? e.target.value : "");
   };
 
-useEffect(() => {
-  if (post?.bookmarks && user?._id) {
-    setBookmarked(post.bookmarks.includes(user._id));
-  }
-}, [post?.bookmarks, user?._id]);
-
-const handleFollowToggle = async () => {
-  try {
-    const response = await axios.post(
-      `${API_BASE}/user/followorunfollow/${post.author._id}`,
-      {},
-      { withCredentials: true }
-    );
-
-    if (response.data.success) {
-      // ✅ Update posts array in Redux so isFollowing re-computes correctly
-      const updatedPosts = posts.map((p) =>
-        p.author._id === post.author._id
-          ? {
-              ...p,
-              author: {
-                ...p.author,
-                followers: isFollowing
-                  ? p.author.followers.filter((id) => id !== user._id)
-                  : [...p.author.followers, user._id],
-              },
-            }
-          : p
+  const handleFollowToggle = async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/user/followorunfollow/${post.author._id}`,
+        {},
+        { withCredentials: true }
       );
 
-      dispatch(setPosts(updatedPosts));
+      if (response.data.success) {
+        // Toggle local state immediately
+        setIsFollowing(!isFollowing);
 
-     
-      // 🔹 Update auth slice (for profile + suggested users)
-      dispatch(toggleFollow({ targetUserId: post.author._id, currentUserId: user._id }));
+        // ✅ Update posts in Redux so other components reflect change
+        const updatedPosts = posts.map((p) =>
+          p.author._id === post.author._id
+            ? {
+                ...p,
+                author: {
+                  ...p.author,
+                  followers: isFollowing
+                    ? p.author.followers.filter((id) => id !== user._id)
+                    : [...p.author.followers, user._id],
+                },
+              }
+            : p
+        );
+        dispatch(setPosts(updatedPosts));
 
-
-      toast.success(response.data.message);
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error following/unfollowing:", error);
+      toast.error("Something went wrong");
     }
-  } catch (error) {
-    console.error("Error following/unfollowing:", error);
-    toast.error("Something went wrong");
-  }
-};
+  };
 
   const likeOrDislikeHandler = async () => {
     try {
       const action = liked ? "dislike" : "like";
-      const res = await axios.get(
-        `${API_BASE}/post/${post._id}/${action}`,
-        { withCredentials: true }
-      );
-      console.log(res.data);
+      const res = await axios.get(`${API_BASE}/post/${post._id}/${action}`, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         const updatedLikes = liked ? postLike - 1 : postLike + 1;
         setPostLike(updatedLikes);
         setLiked(!liked);
 
-        // apne post ko update krunga
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -124,14 +117,8 @@ const handleFollowToggle = async () => {
       const res = await axios.post(
         `${API_BASE}/post/${post._id}/comment`,
         { text },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
+        { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );
-      console.log(res.data);
       if (res.data.success) {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
@@ -139,7 +126,6 @@ const handleFollowToggle = async () => {
         const updatedPostData = posts.map((p) =>
           p._id === post._id ? { ...p, comments: updatedCommentData } : p
         );
-
         dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
         setText("");
@@ -151,14 +137,11 @@ const handleFollowToggle = async () => {
 
   const deletePostHandler = async () => {
     try {
-      const res = await axios.delete(
-        `${API_BASE}/post/delete/${post?._id}`,
-        { withCredentials: true }
-      );
+      const res = await axios.delete(`${API_BASE}/post/delete/${post?._id}`, {
+        withCredentials: true,
+      });
       if (res.data.success) {
-        const updatedPostData = posts.filter(
-          (postItem) => postItem?._id !== post?._id
-        );
+        const updatedPostData = posts.filter((postItem) => postItem?._id !== post?._id);
         dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
       }
@@ -167,63 +150,56 @@ const handleFollowToggle = async () => {
       toast.error(error.response.data.messsage);
     }
   };
+
   const bookmarkHandler = async () => {
-  try {
-    const res = await axios.get(
-      `${API_BASE}/post/${post?._id}/bookmark`,
-      { withCredentials: true }
-    );
-
-    if (res.data.success) {
-      setBookmarked(!bookmarked); // toggle state
-      toast.success(res.data.message);
+    try {
+      const res = await axios.get(`${API_BASE}/post/${post?._id}/bookmark`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setBookmarked(!bookmarked);
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+  };
 
   return (
     <div className="my-8 w-full max-w-sm mx-auto border-b border-black pb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-  <Link to={`/profile/${post.author?._id}`}>
-    <Avatar>
-      <AvatarImage src={post.author?.profilePicture} alt="post_image" />
-      <AvatarFallback>CN</AvatarFallback>
-    </Avatar>
-  </Link>
-  <div className="flex items-center gap-3">
-    <Link
-      to={`/profile/${post.author._id }`}
-      className="font-semibold hover:underline"
-    >
-      {post.author?.username}
-    </Link>
+          <Link to={`/profile/${post.author?._id}`}>
+            <Avatar>
+              <AvatarImage src={post.author?.profilePicture} alt="post_image" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to={`/profile/${post.author._id}`}
+              className="font-semibold hover:underline"
+            >
+              {post.author?.username}
+            </Link>
 
-    {user?._id === post.author._id ? (
-
-      
-      <Badge className="bg-[#033f63] border-black text-gray-200" variant="secondary">
-        Author
-      </Badge>
-    ) : (
-     <Button
-  className="h-6 px-4 py-4 text-l bg-[#033f63] hover:bg-[#033f63]  text-gray-200 border-black"
-    onClick={() => {
-    handleFollowToggle();
-    dispatch(
-      toggleFollow({ targetUserId: selectedUser._id, currentUserId: user._id })
-    );
-  }}
->
-  {isFollowing ? "Unfollow" : "Follow"}
-</Button>
-
-    )}
-  </div>
-</div>
+            {user?._id === post.author._id ? (
+              <Badge
+                className="bg-[#033f63] border-black text-gray-200"
+                variant="secondary"
+              >
+                Author
+              </Badge>
+            ) : (
+              <Button
+                className="h-6 px-4 py-4 text-l bg-[#033f63] hover:bg-[#033f63] text-gray-200 border-black"
+                onClick={handleFollowToggle}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Button>
+            )}
+          </div>
+        </div>
 
         {user && user?._id === post?.author._id && (
           <Dialog>
@@ -242,6 +218,7 @@ const handleFollowToggle = async () => {
           </Dialog>
         )}
       </div>
+
       <img
         className="rounded-sm my-2 w-full aspect-square object-cover"
         src={post.image}
@@ -271,8 +248,8 @@ const handleFollowToggle = async () => {
             }}
             className="cursor-pointer hover:text-gray-600"
           />
-          
         </div>
+
         {bookmarked ? (
           <FaBookmark
             onClick={bookmarkHandler}
@@ -285,11 +262,13 @@ const handleFollowToggle = async () => {
           />
         )}
       </div>
+
       <span className="font-medium block mb-2">{postLike} likes</span>
       <p>
         <span className="font-medium mr-2">{post.author?.username}</span>
         {post.caption}
       </p>
+
       {comment.length > 0 && (
         <span
           onClick={() => {
@@ -301,7 +280,9 @@ const handleFollowToggle = async () => {
           View all {comment.length} comments
         </span>
       )}
+
       <CommentDialog open={open} setOpen={setOpen} />
+
       <div className="flex items-center justify-between">
         <input
           type="text"
