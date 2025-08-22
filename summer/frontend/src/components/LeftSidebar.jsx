@@ -135,7 +135,7 @@ const LeftSidebar = () => {
                   key={notification.userId}
                   className="flex items-center gap-2 my-2"
                 >
-                  <Avatar className="w-8 h-8">
+                  <Avatar className="w-8 h-8 rounded-full overflow-hidden ring-1 ring-gray-300">
                     <AvatarImage
                       src={notification.userDetails?.profilePicture}
                       alt={notification.userDetails?.username}
