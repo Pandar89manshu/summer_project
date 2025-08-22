@@ -55,20 +55,19 @@ const Post = ({ post }) => {
         // Toggle local state immediately
         setIsFollowing(!isFollowing);
 
-        // ✅ Update posts in Redux so other components reflect change
-        const updatedPosts = posts.map((p) =>
-          p.author._id === post.author._id
-            ? {
-                ...p,
-                author: {
-                  ...p.author,
-                  followers: isFollowing
-                    ? p.author.followers.filter((id) => id !== user._id)
-                    : [...p.author.followers, user._id],
-                },
-              }
-            : p
-        );
+       const updatedPosts = posts.map((p) =>
+        p.author._id === post.author._id
+          ? {
+              ...p,
+              author: {
+                ...p.author,
+                followers: newIsFollowing
+                  ? [...p.author.followers, user._id]
+                  : p.author.followers.filter((id) => id !== user._id),
+              },
+            }
+          : p
+      );
         dispatch(setPosts(updatedPosts));
 
         toast.success(response.data.message);
