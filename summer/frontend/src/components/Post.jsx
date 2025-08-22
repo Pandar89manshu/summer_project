@@ -32,11 +32,7 @@ const Post = ({ post }) => {
     post.author.followers?.includes(user?._id) || false
   );
 
-  // Recompute when post.author.followers or user changes
-  useEffect(() => {
-    setIsFollowing(post.author.followers?.includes(user?._id) || false);
-  }, [post.author.followers, user?._id]);
-
+  
   useEffect(() => {
     if (post?.bookmarks && user?._id) {
       setBookmarked(post.bookmarks.includes(user._id));
