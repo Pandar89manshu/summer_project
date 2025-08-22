@@ -65,17 +65,19 @@ const ChatPage = () => {
                 onClick={() => dispatch(setSelectedUser(suggestedUser))}
                 className="flex items-center gap-4 p-3 rounded-lg transition cursor-pointer hover:bg-[#033f63] hover:text-white"
               >
-                <div className="relative">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={suggestedUser?.profilePicture} />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  {isOnline && (
-                    <span className="absolute bottom-0 right-0 text-xs text-green-600 font-semibold">
-                      Online
-                    </span>
-                  )}
-                </div>
+             <div className="relative">
+  <Avatar className="w-12 h-12">
+    <AvatarImage src={suggestedUser?.profilePicture} />
+    <AvatarFallback>CN</AvatarFallback>
+  </Avatar>
+</div>
+<div>
+  <p className="font-medium">{suggestedUser?.username}</p>
+  {isOnline && (
+    <p className="text-xs text-green-600 font-semibold">Online</p>
+  )}
+</div>
+
                 <div>
                   <p className="font-medium">{suggestedUser?.username}</p>
                 </div>
