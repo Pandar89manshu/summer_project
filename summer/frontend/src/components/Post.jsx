@@ -18,7 +18,7 @@ const Post = ({ post }) => {
   const [open, setOpen] = useState(false);
   const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
-
+   const { user } = useSelector((store) => store.auth);
   const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
