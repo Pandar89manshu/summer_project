@@ -14,23 +14,54 @@ import { Link } from "react-router-dom";
 import API_BASE from "@/confige";
 
 const Post = ({ post }) => {
-  const { posts } = useSelector((store) => store.post);
-  const { user } = useSelector((store) => store.auth);
-  const dispatch = useDispatch();
-
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
+  const { posts } = useSelector((store) => store.post);
+  const dispatch = useDispatch();
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState(post.comments);
   const [bookmarked, setBookmarked] = useState(
     post.bookmarks?.includes(user?._id) || false
   );
+ 
+   const { userProfile: globalUserProfile, user } = useSelector(
+     (store) => store.auth
+   );
 
-  // Always get latest post data from Redux
-  const currentPost = posts.find((p) => p._id === post._id) || post;
-  const liked = currentPost.likes.includes(user?._id);
-  const isFollowing = currentPost.author.followers?.includes(user?._id);
+const [isFollowing, setIsFollowing] = useState(
+    globalUserProfile?.followers.includes(user?._id)
+  );
 
+  useEffect(() => {
+      setUserProfile(globalUserProfile);
+      setIsFollowing(globalUserProfile?.followers.includes(user?._id));
+    }, [globalUserProfile, user]);
+
+    const handleFollowToggle = async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE}/user/followorunfollow/${userId}`,
+        {},
+        { withCredentials: true }
+      );
+      if (response.data.success) {
+        setIsFollowing(!isFollowing);
+        setUserProfile((prevProfile) => ({
+          ...prevProfile,
+          followers: isFollowing
+            ? prevProfile.followers.filter(
+                (followerId) => followerId !== user?._id
+              )
+            : [...prevProfile.followers, user?._id],
+        }));
+      }
+    } catch (error) {
+      console.error("Error following/unfollowing user:", error);
+    }
+  };
+
+  
   useEffect(() => {
     if (post?.bookmarks && user?._id) {
       setBookmarked(post.bookmarks.includes(user._id));
@@ -41,36 +72,6 @@ const Post = ({ post }) => {
     setText(e.target.value.trim() ? e.target.value : "");
   };
 
-  const handleFollowToggle = async () => {
-    try {
-      const response = await axios.post(
-        `${API_BASE}/user/followorunfollow/${post.author._id}`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (response.data.success) {
-        const updatedPosts = posts.map((p) =>
-          p.author._id === post.author._id
-            ? {
-                ...p,
-                author: {
-                  ...p.author,
-                  followers: isFollowing
-                    ? p.author.followers.filter((id) => id !== user._id)
-                    : [...p.author.followers, user._id],
-                },
-              }
-            : p
-        );
-        dispatch(setPosts(updatedPosts));
-        toast.success(response.data.message);
-      }
-    } catch (error) {
-      console.error("Error following/unfollowing:", error);
-      toast.error("Something went wrong");
-    }
-  };
 
   const likeOrDislikeHandler = async () => {
     try {
@@ -79,9 +80,11 @@ const Post = ({ post }) => {
         withCredentials: true,
       });
       if (res.data.success) {
-        setPostLike(liked ? postLike - 1 : postLike + 1);
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes);
+        setLiked(!liked);
 
-        const updatedPosts = posts.map((p) =>
+        const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
                 ...p,
@@ -91,11 +94,11 @@ const Post = ({ post }) => {
               }
             : p
         );
-        dispatch(setPosts(updatedPosts));
+        dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -110,37 +113,37 @@ const Post = ({ post }) => {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
 
-        const updatedPosts = posts.map((p) =>
+        const updatedPostData = posts.map((p) =>
           p._id === post._id ? { ...p, comments: updatedCommentData } : p
         );
-        dispatch(setPosts(updatedPosts));
+        dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
         setText("");
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
   const deletePostHandler = async () => {
     try {
-      const res = await axios.delete(`${API_BASE}/post/delete/${post._id}`, {
+      const res = await axios.delete(`${API_BASE}/post/delete/${post?._id}`, {
         withCredentials: true,
       });
       if (res.data.success) {
-        const updatedPosts = posts.filter((p) => p._id !== post._id);
-        dispatch(setPosts(updatedPosts));
+        const updatedPostData = posts.filter((postItem) => postItem?._id !== post?._id);
+        dispatch(setPosts(updatedPostData));
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Something went wrong");
+      console.log(error);
+      toast.error(error.response.data.messsage);
     }
   };
 
   const bookmarkHandler = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/post/${post._id}/bookmark`, {
+      const res = await axios.get(`${API_BASE}/post/${post?._id}/bookmark`, {
         withCredentials: true,
       });
       if (res.data.success) {
@@ -148,7 +151,7 @@ const Post = ({ post }) => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
