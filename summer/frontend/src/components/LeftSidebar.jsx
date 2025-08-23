@@ -69,7 +69,7 @@ const LeftSidebar = () => {
     } else if (textType === "Message") {
       navigate("/chat");
     } else if (textType === "Notifications") {
-        setShowNotificationPopup(prev => !prev);
+      setShowNotificationPopup(!showNotificationPopup);
     }
   };
 
