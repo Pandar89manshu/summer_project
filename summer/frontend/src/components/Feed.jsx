@@ -55,9 +55,11 @@ const Feed = () => {
   return (
     <div className="relative-15 flex justify-center w-full bg-gray-300 min-h-screen">
       {/* 📰 Main Feed */}
-      <div className="flex-1 flex flex-col items-center max-w-2xl px-2 mt-32">
+   <div className="flex-1 flex flex-col items-center w-full max-w-2xl px-2 mt-32 sm:px-1">
+
         {/* 🔍 Fixed Search Bar */}
-        <div className="fixed top-0 z-10 bg-gray-300 w-full max-w-2xl px-4 py-4 pb-6 border-b border-black left-0 right-0 mx-auto">
+      <div className="fixed top-0 z-10 bg-gray-300 w-full max-w-2xl px-4 py-4 pb-6 border-b border-black left-0 right-0 mx-auto sm:px-2">
+
           <div className="relative" ref={searchRef}>
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-white" />
             <input
@@ -96,7 +98,8 @@ const Feed = () => {
       </div>
 
       {/* 📏 Vertical Line between feed and sidebar */}
-      <div className="fixed top-0 right-[300px] h-full w-px bg-black z-10" />
+    <div className="hidden lg:block fixed top-0 right-[300px] h-full w-px bg-black z-10" />
+
 
       {/* 👤 Right Sidebar */}
       <div className="hidden lg:block fixed top-0 right-0 w-[300px] h-full px-4 pt-7 overflow-y-auto z-20 bg-[#6c96b6]">
